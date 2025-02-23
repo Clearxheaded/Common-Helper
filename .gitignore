@@ -1,5 +1,7 @@
 # Dependencies
 node_modules/
+uploads/
+test/data/*.pdf
 
 # Environment variables
 .env

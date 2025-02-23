@@ -1,4 +1,4 @@
-const errorHandler = (err, req, res, next) => {
+export default function errorHandler(err, req, res, next) {
   console.error(err.stack);
 
   if (err.name === 'MulterError') {
@@ -9,9 +9,9 @@ const errorHandler = (err, req, res, next) => {
   }
 
   res.status(500).json({
-    error: 'Internal server error',
-    message: err.message
+    error: {
+      message: err.message || 'Internal Server Error',
+      status: err.status || 500
+    }
   });
-};
-
-module.exports = errorHandler; 
+} 

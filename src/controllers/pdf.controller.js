@@ -1,39 +1,71 @@
-const pdfParse = require('pdf-parse');
-const fs = require('fs');
-const { extractGradeInfo } = require('../utils/pdfUtils');
+import { OpenAI } from 'openai';
+import multer from 'multer';
+import fs from 'fs';
+import { extractGradeInfo } from '../utils/pdfUtils.js';
 
-exports.parsePdf = async (req, res) => {
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+export async function parsePdf(req, res) {
   try {
-    console.log('Received PDF upload request');
-    console.log('Request files:', req.file);
-    
+    console.log('Request received:', req.file);
     if (!req.file) {
-      console.log('No file received');
+      console.log('No file in request');
       return res.status(400).json({ error: 'No PDF file uploaded' });
     }
 
-    console.log('File path:', req.file.path);
-    const dataBuffer = fs.readFileSync(req.file.path);
+    // Read the PDF file
+    console.log('Reading file from:', req.file.path);
+    const pdfText = fs.readFileSync(req.file.path, 'utf8');
+    console.log('PDF content:', pdfText.substring(0, 200) + '...');
     
-    console.log('Parsing PDF...');
-    const data = await pdfParse(dataBuffer);
-    
-    console.log('Extracting grade info...');
-    const gradeInfo = extractGradeInfo(data.text);
+    // Extract initial grade info
+    const gradeInfo = extractGradeInfo(pdfText);
+    console.log('Extracted grade info:', gradeInfo);
 
-    // Clean up temporary file
+    // Use OpenAI to analyze the transcript
+    const completion = await openai.chat.completions.create({
+      model: process.env.MODEL_NAME || "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: "You are an expert in analyzing academic transcripts and converting international grades to US equivalents."
+        },
+        {
+          role: "user",
+          content: `Analyze this transcript text and extract subject information:
+            ${pdfText}
+            
+            Format the response as JSON with:
+            - subjects: array of subject names
+            - grades: array of original grades
+            - usGrades: array of US equivalent grades
+            - gpa: calculated US GPA (as a number like 3.7)
+            - analysis: array of subject-specific analyses
+            - matchPercentages: array of equivalency percentages for each subject`
+        }
+      ]
+    });
+
+    // Parse OpenAI response
+    const aiAnalysis = JSON.parse(completion.choices[0].message.content);
+
+    // Clean up the temporary file
     fs.unlinkSync(req.file.path);
 
-    console.log('Sending response...');
     res.json({
-      text: data.text,
-      gradeInfo
+      originalText: pdfText,
+      gradeInfo: gradeInfo,
+      aiAnalysis: aiAnalysis
     });
   } catch (error) {
-    console.error('PDF parsing error:', error);
+    console.error('PDF processing error:', error);
     res.status(500).json({ 
-      error: 'Error parsing PDF',
+      error: 'Error processing PDF',
       details: error.message 
     });
   }
+}
+
+export default {
+  parsePdf
 }; 

@@ -1,9 +1,9 @@
-const express = require('express');
+import express from 'express';
+import openaiController from '../controllers/openai.controller.js';
 const router = express.Router();
-const openaiController = require('../controllers/openai.controller');
 
 router.post('/query', openaiController.queryOpenAI);
 router.post('/convert-grades', openaiController.convertGrades);
 router.post('/match-subjects', openaiController.matchSubjects);
 
-module.exports = router; 
+export default router; 

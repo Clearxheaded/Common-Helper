@@ -1,5 +1,7 @@
-const { OpenAI } = require('openai');
-const openai = new OpenAI(process.env.OPENAI_API_KEY);
+import { OpenAI } from 'openai';
+import 'dotenv/config';
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const AP_SUBJECTS = {
   'AP Calculus AB': {
@@ -944,7 +946,7 @@ async function matchSubject(saSubject) {
   }
 }
 
-async function matchALevelSubject(aLevelSubject) {
+export async function matchALevelSubject(aLevelSubject) {
   try {
     // First verify the subject exists
     if (!INTERNATIONAL_SUBJECTS[`A-Level ${aLevelSubject}`]) {
@@ -1052,9 +1054,8 @@ async function matchALevelSubject(aLevelSubject) {
   }
 }
 
-module.exports = {
+export {
   matchSubject,
-  matchALevelSubject,
   SA_SUBJECTS,
   AP_SUBJECTS,
   INTERNATIONAL_SUBJECTS

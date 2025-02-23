@@ -1,6 +1,6 @@
-const express = require('express');
+import express from 'express';
+import { matchSubject, SA_SUBJECTS } from '../services/subjectMatcher.js';
 const router = express.Router();
-const { matchSubject, SA_SUBJECTS } = require('../services/subjectMatcher');
 
 router.post('/match', async (req, res) => {
   try {
@@ -22,4 +22,4 @@ router.post('/match', async (req, res) => {
   }
 });
 
-module.exports = router; 
+export default router; 

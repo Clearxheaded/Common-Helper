@@ -1,12 +1,19 @@
-const multer = require('multer');
-const path = require('path');
+import multer from 'multer';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, process.env.UPLOAD_DIR);
+  destination: function (req, file, cb) {
+    console.log('Saving file to:', path.join(__dirname, '../../uploads/temp'));
+    cb(null, path.join(__dirname, '../../uploads/temp'));
   },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+  filename: function (req, file, cb) {
+    console.log('Original filename:', file.originalname);
+    cb(null, Date.now() + '-' + file.originalname);
   }
 });
 
@@ -26,4 +33,4 @@ const upload = multer({
   }
 });
 
-module.exports = upload; 
+export default upload; 

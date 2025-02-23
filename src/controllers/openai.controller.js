@@ -1,7 +1,8 @@
-const { OpenAI } = require('openai');
-const openai = new OpenAI(process.env.OPENAI_API_KEY);
+import { OpenAI } from 'openai';
 
-exports.queryOpenAI = async (req, res) => {
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+export async function queryOpenAI(req, res) {
   try {
     const { prompt } = req.body;
     
@@ -15,9 +16,9 @@ exports.queryOpenAI = async (req, res) => {
     console.error('OpenAI API error:', error);
     res.status(500).json({ error: 'Error querying OpenAI' });
   }
-};
+}
 
-exports.convertGrades = async (req, res) => {
+export async function convertGrades(req, res) {
   try {
     const { grades, educationSystem } = req.body;
     
@@ -34,9 +35,9 @@ exports.convertGrades = async (req, res) => {
     console.error('Grade conversion error:', error);
     res.status(500).json({ error: 'Error converting grades' });
   }
-};
+}
 
-exports.matchSubjects = async (req, res) => {
+export async function matchSubjects(req, res) {
   try {
     const { subjects } = req.body;
     
@@ -53,4 +54,10 @@ exports.matchSubjects = async (req, res) => {
     console.error('Subject matching error:', error);
     res.status(500).json({ error: 'Error matching subjects' });
   }
+}
+
+export default {
+  queryOpenAI,
+  convertGrades,
+  matchSubjects
 }; 
