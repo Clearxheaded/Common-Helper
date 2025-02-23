@@ -1,0 +1,9 @@
+mkdir src
+mkdir src/controllers
+mkdir src/routes
+mkdir src/utils
+mkdir src/middleware
+mkdir src/config
+mkdir src/services
+mkdir uploads
+mkdir uploads/temp 

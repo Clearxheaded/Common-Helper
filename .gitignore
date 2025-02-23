@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+uploads/
+test/data/*.pdf
+
+# Environment variables
+.env
+
+# Temporary files
+uploads/temp/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store 
