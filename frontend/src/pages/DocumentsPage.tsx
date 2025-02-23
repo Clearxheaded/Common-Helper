@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
+import { apiService } from "@/services/apiService"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
@@ -7,6 +8,8 @@ export function DocumentsPage() {
   const navigate = useNavigate()
   const { state } = useLocation()
   const [files, setFiles] = useState<{ [key: string]: File | null }>({})
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const getRequiredDocuments = () => {
     if (state.educationSystem === "Matric") {
@@ -22,6 +25,31 @@ export function DocumentsPage() {
   const isComplete = () => {
     const required = getRequiredDocuments()
     return required.every(doc => files[doc])
+  }
+
+  const handleContinue = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const uploadedFiles = Object.values(files).filter((f): f is File => f !== null)
+      const result = await apiService.uploadDocuments(uploadedFiles)
+      // Check for errors in results
+      const errors = result.filter(r => r.error)
+      if (errors.length > 0) {
+        throw new Error(errors[0].error)
+      }
+      
+      navigate('/results', { 
+        state: { 
+          analysis: result[0].analysis,  // Assuming single file for now
+          originalText: result[0].originalText 
+        } 
+      })
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -50,12 +78,15 @@ export function DocumentsPage() {
         <Button
           className="w-full"
           size="lg"
-          disabled={!isComplete()}
-          onClick={() => navigate('/results')}
+          disabled={!isComplete() || loading}
+          onClick={handleContinue}
         >
-          Continue
+          {loading ? 'Processing...' : 'Continue'}
         </Button>
       </div>
+      {error && (
+        <div className="mt-4 text-red-500">{error}</div>
+      )}
     </div>
   )
 } 

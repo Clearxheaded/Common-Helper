@@ -9,6 +9,9 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { evaluateTranscript } from './services/transcriptEvaluator.js';
 import { matchALevelSubject } from './services/subjectMatcher.js';
+import { evaluateTranscript as testEvaluator } from './tests/integration/test-evaluator.js';
+import { parsePDF, extractSubjectsFromText } from './services/pdfParser.js';
+import multer from 'multer';
 
 import openaiRoutes from './routes/openai.routes.js';
 import errorHandler from './middleware/errorHandler.js';
@@ -16,7 +19,7 @@ import subjectRoutes from './routes/subject.routes.js';
 import pdfRoutes from './routes/pdf.routes.js';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.NODE_ENV === 'production' ? process.env.PORT : 3002;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -24,9 +27,18 @@ const __dirname = dirname(__filename);
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173' // Vue.js default port
+  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+  credentials: true
 }));
 app.use(express.json());
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024  // 10MB limit
+  }
+});
 
 // Add this before setting up routes
 const uploadDir = path.join(__dirname, '..', 'uploads', 'temp');
@@ -83,6 +95,56 @@ app.post('/api/match', async (req, res) => {
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Upload endpoint
+app.post('/upload', upload.array('documents'), async (req, res) => {
+  try {
+    const files = req.files;
+    if (!files || files.length === 0) {
+      return res.status(400).json({ error: 'No files uploaded' });
+    }
+    
+    const results = await Promise.all(files.map(async (file) => {
+      const tempPath = path.join(uploadDir, file.originalname);
+      await fs.promises.writeFile(tempPath, file.buffer);
+      
+      try {
+        // Extract text from PDF
+        const pdfText = await parsePDF(tempPath);
+        
+        // Extract subjects and grades from text
+        const extractedSubjects = extractSubjectsFromText(pdfText);
+        
+        // Format for evaluator
+        const formattedSubjects = extractedSubjects.map(s => ({
+          subject: s.name,
+          grade: s.grade
+        }));
+        
+        // Use your evaluator
+        const result = await testEvaluator(formattedSubjects, 'matric');
+        
+        await fs.promises.unlink(tempPath);
+        
+        return {
+          filename: file.originalname,
+          analysis: JSON.parse(result)
+        };
+      } catch (error) {
+        console.error('File processing error:', error);
+        return {
+          filename: file.originalname,
+          error: error.message
+        };
+      }
+    }));
+    
+    res.json(results);
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: 'Upload failed' });
   }
 });
 
