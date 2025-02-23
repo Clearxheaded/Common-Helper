@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { evaluateTranscript } from './services/transcriptEvaluator.js';
 import { matchALevelSubject } from './services/subjectMatcher.js';
+import { createClient } from '@supabase/supabase-js'
 
 import openaiRoutes from './routes/openai.routes.js';
 import errorHandler from './middleware/errorHandler.js';
@@ -34,6 +35,12 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 console.log('Upload directory:', uploadDir);
+
+// Initialize Supabase client (you'll need to add these environment variables)
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+)
 
 // Root route
 app.get('/', (req, res) => {
@@ -70,7 +77,20 @@ app.post('/api/evaluate', async (req, res) => {
   try {
     const { subjects, system } = req.body;
     const result = await evaluateTranscript(subjects, system);
-    res.json(JSON.parse(result));
+    const parsedResult = JSON.parse(result);
+    
+    // Store in Supabase
+    const { data, error } = await supabase
+      .from('main')
+      .insert([
+        { 
+          GPA: parsedResult.GPA  // or however GPA is named in your JSON
+        }
+      ]);
+
+    if (error) throw error;
+    
+    res.json(parsedResult);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
