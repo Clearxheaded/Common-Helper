@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
+import { supabaseService } from "@/services/supabaseService"
 import {
   Select,
   SelectContent,
@@ -13,10 +14,23 @@ export function CountryPage() {
   const navigate = useNavigate()
   const [country, setCountry] = useState("")
   const [educationSystem, setEducationSystem] = useState("")
+  const [error, setError] = useState<string | null>(null)
 
   const educationSystems = {
     "South Africa": ["Matric", "A levels"],
     "United Kingdom": ["A levels"],
+  }
+
+  const handleContinue = async () => {
+    try {
+      await supabaseService.saveSelection(country, educationSystem)
+      navigate('/documents', { 
+        state: { country, educationSystem } 
+      })
+    } catch (err) {
+      setError(err.message)
+      console.error('Failed to save selection:', err)
+    }
   }
 
   return (
@@ -57,12 +71,13 @@ export function CountryPage() {
           className="w-full"
           size="lg"
           disabled={!country || !educationSystem}
-          onClick={() => navigate('/documents', { 
-            state: { country, educationSystem } 
-          })}
+          onClick={handleContinue}
         >
           Continue
         </Button>
+        {error && (
+          <div className="mt-4 text-red-500">{error}</div>
+        )}
       </div>
     </div>
   )
