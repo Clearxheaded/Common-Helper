@@ -1,5 +1,3 @@
-# Common-Helper
-
 # 📄 Common Helper - README
 
 ## 🌍 International Transcript Conversion Assistant
