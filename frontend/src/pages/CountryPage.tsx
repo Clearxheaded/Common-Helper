@@ -46,9 +46,14 @@ export function CountryPage() {
           educationSystem: formattedSystem
         } 
       })
-    } catch (err) {
-      setError(err.message)
-      console.error('Failed to save selection:', err)
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message)
+        console.error('Failed to save selection:', err)
+      } else {
+        setError('An unknown error occurred')
+        console.error('Failed to save selection:', err) 
+      }
     }
   }
 

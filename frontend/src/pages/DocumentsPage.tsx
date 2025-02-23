@@ -51,19 +51,18 @@ export function DocumentsPage() {
       const uploadedFiles = Object.values(files).filter((f): f is File => f !== null)
       const result = await apiService.uploadDocuments(uploadedFiles)
       // Check for errors in results
-      const errors = result.filter(r => r.error)
+      const errors = result.filter((r: { error?: string }) => r.error)
       if (errors.length > 0) {
         throw new Error(errors[0].error)
       }
-      
       navigate('/results', { 
         state: { 
           analysis: result[0].analysis,
           originalText: result[0].originalText 
         } 
       })
-    } catch (err) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred')
     } finally {
       setLoading(false)
     }

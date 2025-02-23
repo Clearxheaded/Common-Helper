@@ -126,6 +126,10 @@ The app should be running at `http://localhost:5173` (or your configured port).
 
 This project is licensed under the [MIT License](LICENSE).
 
+Convert international transcripts to US standards with instant GPA calculation and course equivalency mapping.
+
+🌐 [Live Demo](https://common-helper.vercel.app/)
+
 ---
 
 🚀 _Empowering international students with clarity and ease!_

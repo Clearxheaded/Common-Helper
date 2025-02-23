@@ -150,7 +150,7 @@ export function ResultsPage() {
               </Button>
             </div>
             <div className="grid gap-6">
-              {analysis.subjectMatches.map((subject) => (
+              {analysis.subjectMatches.map((subject: any) => (
                 <SubjectResult key={subject.original} analysis={subject} />
               ))}
             </div>
