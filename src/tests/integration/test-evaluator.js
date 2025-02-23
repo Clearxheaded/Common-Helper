@@ -207,7 +207,9 @@ async function runTests() {
   }
 }
 
-// Run the tests
-runTests().catch(console.error);
+// Only run tests if called directly
+if (import.meta.url === process.argv[1]) {
+  runTests().catch(console.error);
+}
 
 export { evaluateTranscript }; 
