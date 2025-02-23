@@ -24,13 +24,21 @@ export function extractSubjectsFromText(text) {
   const subjects = [];
   let match;
 
+  // Subjects to exclude from analysis
+  const excludedSubjects = [
+    'Afrikaans First Additional Language',
+    'Afrikaans Second Additional Language'
+  ];
+
   // Find all matches in the text
   while ((match = subjectPattern.exec(text)) !== null) {
     const subject = match[1].trim();
     const grade = parseInt(match[2]);
 
-    // Filter out Life Orientation and validate grades
-    if (subject !== 'Life Orientation' && grade >= 0 && grade <= 100) {
+    // Filter out Life Orientation and excluded subjects
+    if (!excludedSubjects.includes(subject) && 
+        subject !== 'Life Orientation' && 
+        grade >= 0 && grade <= 100) {
       subjects.push({
         name: subject,
         grade: grade

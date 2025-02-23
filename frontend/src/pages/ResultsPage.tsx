@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { useLocation } from "react-router-dom"
 import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import { generateReport } from "@/services/reportGenerator"
 
 interface SubjectAnalysis {
   original: string
@@ -76,6 +77,11 @@ export function ResultsPage() {
   const { state } = useLocation()
   const analysis = state?.analysis
 
+  const handleDownload = () => {
+    const doc = generateReport(analysis);
+    doc.save('grade-conversion-report.pdf');
+  }
+
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="max-w-3xl mx-auto space-y-12">
@@ -98,7 +104,7 @@ export function ResultsPage() {
           </div>
         </div>
 
-        <Button className="w-full" size="lg">
+        <Button className="w-full" size="lg" onClick={handleDownload}>
           Download Full Report
         </Button>
       </div>

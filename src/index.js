@@ -117,11 +117,13 @@ app.post('/upload', upload.array('documents'), async (req, res) => {
         // Extract subjects and grades from text
         const extractedSubjects = extractSubjectsFromText(pdfText);
         
-        // Format for evaluator
-        const formattedSubjects = extractedSubjects.map(s => ({
-          subject: s.name,
-          grade: s.grade
-        }));
+        // Filter out Afrikaans and format for evaluator
+        const formattedSubjects = extractedSubjects
+          .filter(s => !s.name.toLowerCase().includes('afrikaans'))
+          .map(s => ({
+            subject: s.name,
+            grade: s.grade
+          }));
         
         // Use your evaluator
         const result = await testEvaluator(formattedSubjects, 'matric');
