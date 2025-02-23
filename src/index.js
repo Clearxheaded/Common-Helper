@@ -158,6 +158,9 @@ app.listen(PORT, () => {
 }); 
 
 app.use(cors({
-  origin: ['https://common-helper.vercel.app', process.env.FRONTEND_URL],
+  origin: [
+    'https://common-helper.vercel.app',
+    'http://localhost:5173', // keep this for local development
+  ],
   credentials: true
 }));

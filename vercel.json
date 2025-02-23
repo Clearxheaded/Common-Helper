@@ -12,5 +12,9 @@
       "source": "/(.*)",
       "destination": "/"
     }
-  ]
+  ],
+  "env": {
+    "PORT": "3002",
+    "NODE_ENV": "production"
+  }
 }
