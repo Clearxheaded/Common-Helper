@@ -156,3 +156,8 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 }); 
+
+app.use(cors({
+  origin: ['https://common-helper.vercel.app', process.env.FRONTEND_URL],
+  credentials: true
+}));
